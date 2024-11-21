@@ -4,6 +4,9 @@
 #include <Firebase_ESP_Client.h>
 #include "addons/TokenHelper.h"
 #include "addons/RTDBHelper.h"
+#include <Wire.h>
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
 
 // Thông tin mạng WiFi
 #define WIFI_SSID "MANG DAY KTX 912"
@@ -23,15 +26,36 @@ FirebaseData fbdo_s1;
 
 bool signUpOK = false;
 unsigned long sendDataPrevMillis = 0;
-bool ledStatus = false;
-float temp = 0;
-float humidity = 0;
 int read_data = 0;
-#define LED_PIN 22 // for led pin
 
+// Thông số oled 0.96 inch
+#define SCREEN_WIDTH 128 // Chiều rộng màn hình OLED theo pixel
+#define SCREEN_HEIGHT 64 // Chiều cao màn hình OLED theo pixel
+
+// Khai báo màn hình SSD1306 kết nối với I2C (chân SDA, SCL)
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
+
+//Khai báo I2c
+#define SDA_PIN 8  // Chân SDA
+#define SCL_PIN 9  // Chân SCL
 void setup() {
   Serial.begin(115200);
-  pinMode(LED_PIN, OUTPUT);
+  Wire.setPins(SDA_PIN, SCL_PIN);
+  // Khởi tạo Oled
+  if(!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
+    Serial.println(F("SSD1306 allocation failed"));
+    for(;;);
+  }
+      // Clear màn hình và hiển thị thông điệp
+  delay(1000);
+  display.clearDisplay();
+  display.setTextSize(1);      // Kích thước chữ
+  display.setTextColor(SSD1306_WHITE);  // Màu chữ
+  display.setCursor(0, 0);    // Vị trí bắt đầu
+  display.println(F("Hello, World!"));
+  display.display();          // Cập nhật hiển thị
+
+// Khởi tạo Wifi và Firebase
   WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
   Serial.print("Connecting to Wifi");
 
@@ -80,6 +104,15 @@ sendDataPrevMillis > 8000 || sendDataPrevMillis == 0)) {
       Serial.print("Data received: ");
 
       Serial.println(read_data); //print the data received from the Firebase  database
+
+              // Hiển thị giá trị nhận được lên màn hình OLED
+        display.clearDisplay();              // Xóa nội dung màn hình
+        display.setTextSize(2);              // Đặt kích thước chữ lớn hơn
+        display.setTextColor(SSD1306_WHITE); // Màu chữ trắng
+        display.setCursor(0, 20);            // Đặt vị trí hiển thị
+        display.print("Value: ");
+        display.println(read_data);          // Hiển thị giá trị
+        display.display();    
     }
 
   } else {

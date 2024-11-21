@@ -26,6 +26,7 @@ unsigned long sendDataPrevMillis = 0;
 bool ledStatus = false;
 float temp = 0;
 float humidity = 0;
+int read_data = 0;
 #define LED_PIN 22 // for led pin
 
 void setup() {
@@ -62,48 +63,30 @@ void setup() {
 }
 
 void loop() {
-  if (Firebase.ready() && signUpOK && (millis() - sendDataPrevMillis > 5000 || sendDataPrevMillis == 0)) {
-    sendDataPrevMillis = millis();
-    float temp = 15;
-    float humidity = 20;
 
-    if (Firebase.RTDB.setFloat(&fbdo, "Sensor/temp_data", temp)) {
-      Serial.println();
-      Serial.print(temp);
-      Serial.println("-successfully saved to " + String(fbdo.dataPath()));
-      Serial.println("(" + String(fbdo.dataType()) + ")");
-    } else {
-      Serial.println("FAILED : " + fbdo.errorReason());
+
+if (Firebase.ready() && signUpOK && (millis() -
+
+sendDataPrevMillis > 8000 || sendDataPrevMillis == 0)) {
+
+  sendDataPrevMillis = millis();
+
+  if (Firebase.RTDB.getInt(&fbdo, "/test/int")) {
+
+    if (fbdo.dataType() == "int") {
+
+      read_data = fbdo.intData();
+
+      Serial.print("Data received: ");
+
+      Serial.println(read_data); //print the data received from the Firebase  database
     }
 
-    if (Firebase.RTDB.setFloat(&fbdo, "Sensor/humidity_data", humidity)) {
-      Serial.println();
-      Serial.print(humidity);
-      Serial.println("-successfully saved to " + fbdo.dataPath());
-      Serial.println("(" + fbdo.dataType() + ")");
-    } else {
-      Serial.println("FAILED : " + fbdo.errorReason());
-    }
-  }
+  } else {
 
-  // Stream builder for LED
-  if (Firebase.ready() && signUpOK) {
-    if (!Firebase.RTDB.readStream(&fbdo_s1)) {
-      Serial.println("FAILED: " + fbdo_s1.errorReason());
+    Serial.println(fbdo.errorReason()); //print he error (if any)
+
     }
 
-    if (fbdo_s1.streamAvailable()) {
-      if (fbdo_s1.dataType() == "boolean") {
-        ledStatus = fbdo_s1.boolData();
-        Serial.println("Successfully read from " + fbdo_s1.dataPath() + ": (" + fbdo_s1.dataType() + ")");
-        if (ledStatus == true) {
-          digitalWrite(LED_PIN, HIGH);
-        } else {
-          digitalWrite(LED_PIN, LOW);
-        }
-      } else {
-        Serial.println("FAILED: " + fbdo_s1.errorReason());
-      }
-    }
   }
 }

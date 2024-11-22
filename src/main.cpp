@@ -24,8 +24,6 @@ FirebaseData fbdo_s1;
 bool signUpOK = false;
 unsigned long sendDataPrevMillis = 0;
 bool ledStatus = false;
-float temp = 0;
-float humidity = 0;
 int read_data = 0;
 #define LED_PIN 22 // for led pin
 

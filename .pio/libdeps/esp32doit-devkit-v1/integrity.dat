@@ -1,0 +1,6 @@
+arduinoUnity
+ArduinoJson
+adafruit/Adafruit SSD1306@^2.5.13
+AsyncTCP
+adafruit/Adafruit GFX Library@^1.11.11
+TaskScheduler
